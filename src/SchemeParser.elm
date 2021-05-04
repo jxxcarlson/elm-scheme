@@ -17,24 +17,22 @@ type LispVal = Atom String
              | String String
              | Bool Bool
 
+{-|
 
--- expr = PA.oneOf [ PA.lazy (\_ -> parenthesizedList), string, atom, integer, PA.lazy (\_ -> quoted)]
+    > run expr "(* 5 (+ 2 3) (u . 'v))"
+    Ok (List [Atom "*",Integer 5,List [Atom "+",Integer 2,Integer 3],DottedList [Atom "u"] (List [Atom "quote",Atom "v"])])
 
-expr = PA.oneOf [ string, atom, integer, PA.lazy (\_ -> quoted)]
+-}
+expr = PA.oneOf [ PA.lazy (\_ -> parenthesizedList), string, atom, integer, PA.lazy (\_ -> quoted)]
 
--- expr = PA.oneOf [PA.lazy (\_ -> parenthesizedList), string, atom, integer, PA.lazy (\_ -> quoted)]
 
 parenthesizedList = T.between (XString.char '(')
-      list
-      (XString.char ')')
-
-parenthesizedList1 = T.between (XString.char '(')
      (PA.oneOf [ PA.backtrackable (PA.lazy (\_ -> list)), dottedList] )
      (XString.char ')')
 {-|
 
 -}
-list = T.manySeparatedBy spaces expr |> PA.map List
+list = T.manySeparatedBy spaces (PA.lazy (\_ -> expr)) |> PA.map List
 
 {-|
     > run dottedList "a . b"
@@ -66,9 +64,6 @@ quoted = T.second (XString.char '\'') expr |> PA.map quote
 quote : LispVal -> LispVal
 quote val =
   List [Atom "quote", val]
-
-
-
 
 
 symbolCharacters = "!#$%&|*+-/:<=>?@^_~"
