@@ -1,4 +1,4 @@
-module XString exposing (withPredicates,  oneCharWithPredicate)
+module XString exposing (withPredicates,  char, oneCharWithPredicate)
 
 {-| Grammar:
 
@@ -53,3 +53,6 @@ oneCharWithPredicate predicate =
         |. Parser.chompIf predicate ExpectingSymbol
         |= Parser.getOffset
         |= Parser.getSource
+
+char : Char -> Parser String
+char a = oneCharWithPredicate (\c -> c == a)

@@ -13,6 +13,7 @@ module ParserTools exposing
     , optionalList
     , second
     , text
+    , third
     )
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
@@ -102,7 +103,13 @@ second p q =
     p |> Parser.andThen (\_ -> q)
 
 
-{-| Running between p q r runs p, then q, then r, returning the result of p:
+third : Parser a -> Parser b -> Parser c -> Parser c
+third p q r =
+    p |> Parser.andThen (\_ -> q) |> Parser.andThen (\_ -> r)
+
+
+
+{-| Running between p q r runs p, then q, then r, returning the result of q:
 
 > run (between (SchemeParser.symbol "[") SchemeParser.int (SchemeParser.symbol "]")) "[12]"
 > Ok 12

@@ -18,7 +18,58 @@ type LispVal = Atom String
              | Bool Bool
 
 
-expr = PA.oneOf [string, atom, integer]
+-- expr = PA.oneOf [ PA.lazy (\_ -> parenthesizedList), string, atom, integer, PA.lazy (\_ -> quoted)]
+
+expr = PA.oneOf [ string, atom, integer, PA.lazy (\_ -> quoted)]
+
+-- expr = PA.oneOf [PA.lazy (\_ -> parenthesizedList), string, atom, integer, PA.lazy (\_ -> quoted)]
+
+parenthesizedList = T.between (XString.char '(')
+      list
+      (XString.char ')')
+
+parenthesizedList1 = T.between (XString.char '(')
+     (PA.oneOf [ PA.backtrackable (PA.lazy (\_ -> list)), dottedList] )
+     (XString.char ')')
+{-|
+
+-}
+list = T.manySeparatedBy spaces expr |> PA.map List
+
+{-|
+    > run dottedList "a . b"
+    Ok (DottedList [Atom "a"] (Atom "b"))
+
+    > run dottedList "a . 'b"
+    Ok (DottedList [Atom "a"] (List [Atom "quote",Atom "b"]))
+
+-}
+dottedList : Parser LispVal
+dottedList =
+      dottedListHead |> PA.andThen (\h -> dottedListTail |> PA.map (\t -> DottedList [h] t))
+
+
+dottedListHead : Parser LispVal
+dottedListHead = T.first expr spaces
+
+dottedListTail : Parser LispVal
+dottedListTail = T.third (XString.char '.') spaces expr
+
+{-|
+    > run quoted "'foo"
+    Ok (List [Atom "quote",Atom "foo"])
+
+-}
+quoted : Parser LispVal
+quoted = T.second (XString.char '\'') expr |> PA.map quote
+
+quote : LispVal -> LispVal
+quote val =
+  List [Atom "quote", val]
+
+
+
+
 
 symbolCharacters = "!#$%&|*+-/:<=>?@^_~"
 
