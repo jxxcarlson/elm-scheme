@@ -9,6 +9,10 @@ Jonathan Tang's article
 
 ```lisp
 > run expr "(* 5 (+ 2 3) (u . 'v))"
-Ok (List [Atom "*",Integer 5,List [Atom "+",Integer 2,Integer 3],DottedList [Atom "u"] (List [Atom "quote",Atom "v"])])
+Ok (List [
+    Atom "*"
+  , Integer 5
+  , List [Atom "+",Integer 2,Integer 3]
+  , DottedList [Atom "u"] (List [Atom "quote",Atom "v"])])
 
 ```
