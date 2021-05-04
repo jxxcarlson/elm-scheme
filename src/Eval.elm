@@ -1,6 +1,7 @@
 module Eval exposing (..)
 
 import  SchemeParser exposing(LispVal(..))
+import Dict exposing(Dict)
 
 
 {-|
@@ -18,3 +19,14 @@ eval val =
         Bool s -> Bool s
 
 
+
+
+primitives :  Dict String (List LispVal -> LispVal)
+primitives = [("+", numericBinop (+)),
+              --("-", numericBinop (-)),
+              --("*", numericBinop (*)),
+              --("/", numericBinop div),
+              --("mod", numericBinop mod),
+              --("quotient", numericBinop quot),
+              --("remainder", numericBinop rem)
+              ]
