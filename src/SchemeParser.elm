@@ -1,20 +1,24 @@
 module SchemeParser exposing (..)
 
 
-import Parser.Advanced exposing ((|.), (|=))
+import Parser.Advanced as PA exposing (Parser, (|.), (|=))
 import XString
 import Error exposing(Context(..), Problem(..))
+import ParserTools as T
 
 type alias Parser a =
-    Parser.Advanced.Parser Context Problem a
+    PA.Parser Context Problem a
 
 
 type LispVal = Atom String
              | List (List LispVal)
              | DottedList (List LispVal) LispVal
-             | Number Int
+             | Integer Int
              | String String
              | Bool Bool
+
+
+expr = PA.oneOf [string, atom, integer]
 
 symbolCharacters = "!#$%&|*+-/:<=>?@^_~"
 
@@ -36,7 +40,37 @@ symbolCharacters = "!#$%&|*+-/:<=>?@^_~"
 -}
 symbol : Parser String
 symbol =
-    XString.oneCharWithPredicate (\c -> String.contains (String.fromChar c) symbolCharacters )
+    XString.oneCharWithPredicate symbolPredicate
+
+symbolPredicate c = String.contains (String.fromChar c) symbolCharacters
+
+letter : Parser String
+letter = XString.oneCharWithPredicate Char.isAlpha
+
+spaces = PA.spaces
 
 
-spaces = Parser.Advanced.spaces
+string : Parser LispVal
+string =
+        T.first (XString.withPredicates (\c -> c == '"') (\c -> c /= '"')) (XString.oneCharWithPredicate (\c -> c == '"'))
+          |> PA.map String
+
+
+atom : Parser LispVal
+atom = XString.withPredicates  atomPrefix atomBody |> PA.map makeAtom
+
+
+atomPrefix c =  (symbolPredicate c || Char.isAlpha c)
+
+atomBody c =  (symbolPredicate c || Char.isAlphaNum c)
+
+makeAtom str =
+    case str of
+        "#t" -> Bool True
+        "#f" -> Bool False
+        _ -> Atom str
+
+
+integer =
+    PA.int ExpectingInt ExpectingInt |> PA.map Integer
+

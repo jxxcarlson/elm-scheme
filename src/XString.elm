@@ -1,4 +1,4 @@
-module XString exposing (withPredicate, oneCharWithPredicate)
+module XString exposing (withPredicates,  oneCharWithPredicate)
 
 {-| Grammar:
 
@@ -32,8 +32,8 @@ characters are not in the list of stop characters. Example:
 recognizes lines that start with an alphabetic character.
 
 -}
-text : (Char -> Bool) -> (Char -> Bool) -> Parser String
-text prefixTest predicate =
+withPredicates : (Char -> Bool) -> (Char -> Bool) -> Parser String
+withPredicates prefixTest predicate =
     Parser.succeed (\start finish content -> String.slice start finish content )
         |= Parser.getOffset
         |. Parser.chompIf (\c -> prefixTest c) (UnHandledError 2)
@@ -42,9 +42,9 @@ text prefixTest predicate =
         |= Parser.getSource
 
 
-withPredicate : (Char -> Bool) -> Parser String
-withPredicate predicate =
-    text predicate (\c -> c /= '\\' && predicate c)
+--withPredicate : (Char -> Bool) -> Parser String
+--withPredicate predicate =
+--    withPredicates predicate (\c -> c /= '\\' && predicate c)
 
 oneCharWithPredicate : (Char -> Bool) -> Parser String
 oneCharWithPredicate predicate =

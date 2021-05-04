@@ -2,7 +2,7 @@ module Error exposing (Problem(..), Context(..))
 
 type Problem
     = ExpectingSymbol
-    | ExpectingLeftBracket
+    | ExpectingInt
     | ExpectingRightBracket
     | ExpectingPipe
     | ExpectingEscape
@@ -14,7 +14,7 @@ type Problem
 
 
 type Context
-    = CElement
+    = IntegerContext
     | CArgs
     | CBody
     | CArgsAndBody
