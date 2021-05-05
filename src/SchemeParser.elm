@@ -1,4 +1,4 @@
-module SchemeParser exposing (..)
+module SchemeParser exposing (LispVal(..), expr)
 
 import Error exposing (Context(..), Problem(..))
 import Parser.Advanced as PA exposing ((|.), (|=), Parser)
@@ -25,10 +25,12 @@ type LispVal
     Ok (List [Atom "*",Integer 5,List [Atom "+",Integer 2,Integer 3],DottedList [Atom "u"] (List [Atom "quote",Atom "v"])])
 
 -}
+expr : Parser LispVal
 expr =
     PA.oneOf [ PA.lazy (\_ -> parenthesizedList), string, atom, integer, PA.lazy (\_ -> quoted) ]
 
 
+parenthesizedList : Parser LispVal
 parenthesizedList =
     T.between (XString.char '(')
         (PA.oneOf [ PA.backtrackable (PA.lazy (\_ -> list)), dottedList ])
