@@ -2,15 +2,48 @@
 
 A draft implementation of a small version of a Scheme interpreter in Elm.
 
-It follows  Jonathan Tang's article 
-[Write Yourself a Scheme in 48 Hours](https://en.wikibooks.org/wiki/Write_Yourself_a_Scheme_in_48_Hours)
-in which he gives a tutorial introduction to an interpreter writen in Haskell.
+The code here follows the ideas in Jonathan Tang's article 
+[Write Yourself a Scheme in 48 Hours](https://en.wikibooks.org/wiki/Write_Yourself_a_Scheme_in_48_Hours).
 I plan to slowly work through the tutorial, adding features
-to this little Scheme as I go.
+to this little Scheme as I go.  I should emphasize that at
+the moment the interpreter is a very simple proof-of-concept.
+Much work to do!
 
-The current goal is get a basic repl up and running.
 
+*Table of Contents*
+- Repl
+- Dev Log
+- Comparison with Haskell Version
 
+## Repl
+
+You can run the interpreter in a repl from the command line. 
+At the shell prompt in the root of the 
+project, just say
+
+```bash
+sh repl.sh
+```
+
+Here is a short session:
+
+```bash
+$ sh repl.sh
+Welcome to the elm-scheme repl
+Type '(+ 2 3) RETURN' at the prompt to see how it works 
+Type control-D to exit
+
+Type ':help' for help
+
+> (+1 2 3)
+No function named +1
+
+> (+ 2 3)
+5
+
+```
+
+## Dev Log
 
 ### 4/4/2021
 
@@ -19,6 +52,7 @@ do basic integer arithmetic.
 
 
 ```lisp
+$ elm repl -- do various imports
 > run expr "(* 5 (+ 2 3) (u . 'v))"
     Ok (List [
       Atom "*"
@@ -32,28 +66,30 @@ do basic integer arithmetic.
 
 ### 4/5/2021
 
-Introduce module `Pretty` with functions to print `LispVals`
+1. Introduce module `Pretty` with functions to print `LispVals`
 and parse errors.  Introduce module `Top` with functions
 `ps: String -> String` and `es: String -> String`.  The first
 parses and displays its input.  The second parses the input,
 runs eval on it, then displays the output.
 
-```alex
-> ps "'4"
-"(quote 4)" 
+    ```alex
+    > ps "'4"
+    "(quote 4)" 
+    
+    > es "'4"
+    "(quote 4)" 
+    
+    > ps "(+ 1 2)"
+    "(+ 1 2)"
+    
+    > es "(+ 1 2)"
+    "3"
+    ```
 
-> es "'4"
-"(quote 4)" 
-
-> ps "(+ 1 2)"
-"(+ 1 2)"
-
-> es "(+ 1 2)"
-"3"
-```
+2. Add a repl, as describe in the intro.
 
 
-## Comparison with Haskell version 
+## Comparison with Haskell Version 
 
 Let's compare the Haskell and Elm versions of the Parser + Eval modules at the 
 stage where both can provide a four function calculator.  In the [Haskell
