@@ -30,9 +30,9 @@ expr =
 
 
 parenthesizedList =
-    T.between (XString.char1 '(')
+    T.between (XString.char '(')
         (PA.oneOf [ PA.backtrackable (PA.lazy (\_ -> list)), dottedList ])
-        (XString.char1 ')')
+        (XString.char ')')
 
 
 {-| -}
@@ -61,7 +61,7 @@ dottedListHead =
 
 dottedListTail : Parser LispVal
 dottedListTail =
-    T.third (XString.char1 '.') spaces expr
+    T.third (XString.char '.') spaces expr
 
 
 {-|
@@ -72,7 +72,7 @@ dottedListTail =
 -}
 quoted : Parser LispVal
 quoted =
-    T.second (XString.char1 '\'') expr |> PA.map quote
+    T.second (XString.char '\'') expr |> PA.map quote
 
 
 quote : LispVal -> LispVal

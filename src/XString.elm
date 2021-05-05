@@ -1,4 +1,4 @@
-module XString exposing (char1, oneCharWithPredicate, withPredicates)
+module XString exposing (char, oneCharWithPredicate, withPredicates)
 
 {-| Grammar:
 
@@ -43,12 +43,6 @@ withPredicates prefixTest predicate =
         |= Parser.getSource
 
 
-
---withPredicate : (Char -> Bool) -> Parser String
---withPredicate predicate =
---    withPredicates predicate (\c -> c /= '\\' && predicate c)
-
-
 oneCharWithPredicate : (Char -> Bool) -> Parser String
 oneCharWithPredicate predicate =
     Parser.succeed (\start finish content -> String.slice start finish content)
@@ -65,8 +59,3 @@ char c =
         |. Parser.chompIf (\ch -> ch == c) (ExpectingChar c)
         |= Parser.getOffset
         |= Parser.getSource
-
-
-char1 : Char -> Parser String
-char1 a =
-    oneCharWithPredicate (\c -> c == a)
