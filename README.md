@@ -8,6 +8,8 @@ in which he gives a tutorial introduction to an interpreter writen in Haskell.
 I plan to slowly work through the tutorial, adding features
 to this little Scheme as I go.
 
+The current goal is get a basic repl up and running.
+
 
 
 ### 4/4/2021
