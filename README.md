@@ -10,7 +10,9 @@ to this little Scheme as I go.
 
 
 
-4/4/2021: Start project, write the parser and a primitive `eval` function that can
+### 4/4/2021
+
+Start project, write the parser and a primitive `eval` function that can
 do basic integer arithmetic.
 
 
@@ -24,8 +26,31 @@ do basic integer arithmetic.
   
 > run expr "(* 2 (+ 3 2))" |> Result.map eval
     Ok (Integer 10)
-
 ```
+
+### 4/5/2021
+
+Introduce module `Pretty` with functions to print `LispVals`
+and parse errors.  Introduce module `Top` with functions
+`ps: String -> String` and `es: String -> String`.  The first
+parses and displays its input.  The second parses the input,
+runs eval on it, then displays the output.
+
+```alex
+> ps "'4"
+"(quote 4)" 
+
+> es "'4"
+"(quote 4)" 
+
+> ps "(+ 1 2)"
+"(+ 1 2)"
+
+> es "(+ 1 2)"
+"3"
+```
+
+
 ## Comparison with Haskell version 
 
 Let's compare the Haskell and Elm versions of the Parser + Eval modules at the 
