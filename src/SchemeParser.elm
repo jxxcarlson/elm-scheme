@@ -1,21 +1,23 @@
 module SchemeParser exposing (..)
 
-
-import Parser.Advanced as PA exposing (Parser, (|.), (|=))
-import XString
-import Error exposing(Context(..), Problem(..))
+import Error exposing (Context(..), Problem(..))
+import Parser.Advanced as PA exposing ((|.), (|=), Parser)
 import ParserTools as T
+import XString
+
 
 type alias Parser a =
     PA.Parser Context Problem a
 
 
-type LispVal = Atom String
-             | List (List LispVal)
-             | DottedList (List LispVal) LispVal
-             | Integer Int
-             | String String
-             | Bool Bool
+type LispVal
+    = Atom String
+    | List (List LispVal)
+    | DottedList (List LispVal) LispVal
+    | Integer Int
+    | String String
+    | Bool Bool
+
 
 {-|
 
@@ -23,18 +25,23 @@ type LispVal = Atom String
     Ok (List [Atom "*",Integer 5,List [Atom "+",Integer 2,Integer 3],DottedList [Atom "u"] (List [Atom "quote",Atom "v"])])
 
 -}
-expr = PA.oneOf [ PA.lazy (\_ -> parenthesizedList), string, atom, integer, PA.lazy (\_ -> quoted)]
+expr =
+    PA.oneOf [ PA.lazy (\_ -> parenthesizedList), string, atom, integer, PA.lazy (\_ -> quoted) ]
 
 
-parenthesizedList = T.between (XString.char '(')
-     (PA.oneOf [ PA.backtrackable (PA.lazy (\_ -> list)), dottedList] )
-     (XString.char ')')
+parenthesizedList =
+    T.between (XString.char1 '(')
+        (PA.oneOf [ PA.backtrackable (PA.lazy (\_ -> list)), dottedList ])
+        (XString.char1 ')')
+
+
+{-| -}
+list =
+    T.manySeparatedBy spaces (PA.lazy (\_ -> expr)) |> PA.map List
+
+
 {-|
 
--}
-list = T.manySeparatedBy spaces (PA.lazy (\_ -> expr)) |> PA.map List
-
-{-|
     > run dottedList "a . b"
     Ok (DottedList [Atom "a"] (Atom "b"))
 
@@ -44,31 +51,41 @@ list = T.manySeparatedBy spaces (PA.lazy (\_ -> expr)) |> PA.map List
 -}
 dottedList : Parser LispVal
 dottedList =
-      dottedListHead |> PA.andThen (\h -> dottedListTail |> PA.map (\t -> DottedList [h] t))
+    dottedListHead |> PA.andThen (\h -> dottedListTail |> PA.map (\t -> DottedList [ h ] t))
 
 
 dottedListHead : Parser LispVal
-dottedListHead = T.first expr spaces
+dottedListHead =
+    T.first expr spaces
+
 
 dottedListTail : Parser LispVal
-dottedListTail = T.third (XString.char '.') spaces expr
+dottedListTail =
+    T.third (XString.char1 '.') spaces expr
+
 
 {-|
+
     > run quoted "'foo"
     Ok (List [Atom "quote",Atom "foo"])
 
 -}
 quoted : Parser LispVal
-quoted = T.second (XString.char '\'') expr |> PA.map quote
+quoted =
+    T.second (XString.char1 '\'') expr |> PA.map quote
+
 
 quote : LispVal -> LispVal
 quote val =
-  List [Atom "quote", val]
+    List [ Atom "quote", val ]
 
 
-symbolCharacters = "!#$%&|*+-/:<=>?@^_~"
+symbolCharacters =
+    "!#$%&|*+-/:<=>?@^_~"
+
 
 {-|
+
     > run (first symbol symbol) "@+"
     Ok "@"
 
@@ -81,42 +98,55 @@ symbolCharacters = "!#$%&|*+-/:<=>?@^_~"
     > run (second spaces symbol) " \n@"
     Ok "@"
 
-
-
 -}
 symbol : Parser String
 symbol =
     XString.oneCharWithPredicate symbolPredicate
 
-symbolPredicate c = String.contains (String.fromChar c) symbolCharacters
+
+symbolPredicate c =
+    String.contains (String.fromChar c) symbolCharacters
+
 
 letter : Parser String
-letter = XString.oneCharWithPredicate Char.isAlpha
+letter =
+    XString.oneCharWithPredicate Char.isAlpha
 
-spaces = PA.spaces
+
+spaces =
+    PA.spaces
 
 
 string : Parser LispVal
 string =
-        T.first (XString.withPredicates (\c -> c == '"') (\c -> c /= '"')) (XString.oneCharWithPredicate (\c -> c == '"'))
-          |> PA.map String
+    T.first (XString.withPredicates (\c -> c == '"') (\c -> c /= '"')) (XString.oneCharWithPredicate (\c -> c == '"'))
+        |> PA.map String
 
 
 atom : Parser LispVal
-atom = XString.withPredicates  atomPrefix atomBody |> PA.map makeAtom
+atom =
+    XString.withPredicates atomPrefix atomBody |> PA.map makeAtom
 
 
-atomPrefix c =  (symbolPredicate c || Char.isAlpha c)
+atomPrefix c =
+    symbolPredicate c || Char.isAlpha c
 
-atomBody c =  (symbolPredicate c || Char.isAlphaNum c)
+
+atomBody c =
+    symbolPredicate c || Char.isAlphaNum c
+
 
 makeAtom str =
     case str of
-        "#t" -> Bool True
-        "#f" -> Bool False
-        _ -> Atom str
+        "#t" ->
+            Bool True
+
+        "#f" ->
+            Bool False
+
+        _ ->
+            Atom str
 
 
 integer =
     PA.int ExpectingInt ExpectingInt |> PA.map Integer
-

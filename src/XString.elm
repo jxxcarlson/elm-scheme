@@ -1,4 +1,4 @@
-module XString exposing (withPredicates,  char, oneCharWithPredicate)
+module XString exposing (char1, oneCharWithPredicate, withPredicates)
 
 {-| Grammar:
 
@@ -15,12 +15,13 @@ module XString exposing (withPredicates,  char, oneCharWithPredicate)
 
 {- (text -}
 
-import Parser.Advanced as Parser exposing ((|.), (|=))
 import Error exposing (Context(..), Problem(..))
+import Parser.Advanced as Parser exposing ((|.), (|=))
 
 
 type alias Parser a =
     Parser.Parser Context Problem a
+
 
 {-| textPS = "text prefixText stopCharacters": Get the longest string
 whose first character satisfies the prefixTest and whose remaining
@@ -34,7 +35,7 @@ recognizes lines that start with an alphabetic character.
 -}
 withPredicates : (Char -> Bool) -> (Char -> Bool) -> Parser String
 withPredicates prefixTest predicate =
-    Parser.succeed (\start finish content -> String.slice start finish content )
+    Parser.succeed (\start finish content -> String.slice start finish content)
         |= Parser.getOffset
         |. Parser.chompIf (\c -> prefixTest c) (UnHandledError 2)
         |. Parser.chompWhile (\c -> predicate c)
@@ -42,17 +43,30 @@ withPredicates prefixTest predicate =
         |= Parser.getSource
 
 
+
 --withPredicate : (Char -> Bool) -> Parser String
 --withPredicate predicate =
 --    withPredicates predicate (\c -> c /= '\\' && predicate c)
 
+
 oneCharWithPredicate : (Char -> Bool) -> Parser String
 oneCharWithPredicate predicate =
-    Parser.succeed (\start finish content -> String.slice start finish content )
+    Parser.succeed (\start finish content -> String.slice start finish content)
         |= Parser.getOffset
         |. Parser.chompIf predicate ExpectingSymbol
         |= Parser.getOffset
         |= Parser.getSource
 
+
 char : Char -> Parser String
-char a = oneCharWithPredicate (\c -> c == a)
+char c =
+    Parser.succeed (\start finish content -> String.slice start finish content)
+        |= Parser.getOffset
+        |. Parser.chompIf (\ch -> ch == c) (ExpectingChar c)
+        |= Parser.getOffset
+        |= Parser.getSource
+
+
+char1 : Char -> Parser String
+char1 a =
+    oneCharWithPredicate (\c -> c == a)

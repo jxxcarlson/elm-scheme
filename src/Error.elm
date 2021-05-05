@@ -1,12 +1,13 @@
-module Error exposing (Problem(..), Context(..))
+module Error exposing (Context(..), Problem(..))
+
 
 type Problem
     = ExpectingSymbol
+    | ExpectingChar Char
     | ExpectingInt
-      | EndOfInput
-      | UnHandledError Int
+    | EndOfInput
+    | UnHandledError Int
 
 
 type Context
     = IntegerContext
-

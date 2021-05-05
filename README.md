@@ -5,6 +5,10 @@ A draft implementation of a small version of a Scheme interpreter in Elm.
 It follows  Jonathan Tang's article 
 [Write Yourself a Scheme in 48 Hours](https://en.wikibooks.org/wiki/Write_Yourself_a_Scheme_in_48_Hours)
 in which he gives a tutorial introduction to an interpreter writen in Haskell.
+I plan to slowly work through the tutorial, adding features
+to this little Scheme as I go.
+
+
 
 4/4/2021: Start project, write the parser and a primitive `eval` function that can
 do basic integer arithmetic.
