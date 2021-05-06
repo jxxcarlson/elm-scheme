@@ -2,8 +2,11 @@ module Eval exposing (..)
 
 import Dict exposing (Dict)
 import List.Extra
+import Error exposing(EvalError(..))
 import SchemeParser exposing (LispVal(..))
+import Either exposing(Either(..))
 
+-- type EvalResult = Either EvalError LispVal
 
 {-|
 
@@ -14,33 +17,56 @@ import SchemeParser exposing (LispVal(..))
     Ok (Integer 10)
 
 -}
-eval : LispVal -> LispVal
-eval val =
-    case val of
-        Atom s ->
-            Atom s
+eval : Either EvalError LispVal -> Either EvalError LispVal
+eval result =
+    case result of
+        Left err -> Left err
 
-        DottedList stuff v ->
-            DottedList (List.map eval stuff) (eval v)
+        Right (Atom s) ->
+            Right (Atom s)
 
-        Integer n ->
-            Integer n
+        Right (DottedList stuff  v) ->
+            case eval (Right v) of
+                Left err -> Left err
+                Right v_ ->
+                   Right (DottedList (mapOverList eval stuff) (v_))
 
-        String s ->
-            String s
+        Right (Integer n) ->
+            Right (Integer n)
 
-        Bool s ->
-            Bool s
+        Right (String s) ->
+            Right (String s)
 
-        List [ Atom "quote", val_ ] ->
-            List [ Atom "quote", val_ ]
+        Right (Bool s) ->
+            Right (Bool s)
 
-        List ((Atom func) :: args) ->
-            apply func (List.map eval args)
+        Right (List [ Atom "quote", val_ ]) ->
+           Right (List [ Atom "quote", val_ ])
 
-        List items ->
-            List (List.map eval items)
+        Right (List ((Atom func) :: args)) ->
+            Right (apply func (mapOverList eval args))
 
+        Right (List items) ->
+              Right (List (mapOverList eval items))
+
+
+-- conjugate : (Either a b -> Either a c)
+
+mapOverList : (Either a b -> Either a c) -> List b -> List c
+mapOverList f list =
+    List.map f (List.map Right list) |> unwrapList
+
+
+unwrapList : List(Either a b)-> List b
+unwrapList list =
+    let
+        folder : (Either a b) -> List b -> List b
+        folder e list_ =
+            case e of
+                Left _ -> list_
+                Right b -> b :: list_
+    in
+    List.foldl folder [] list |> List.reverse
 
 apply : String -> List LispVal -> LispVal
 apply func args =

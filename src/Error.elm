@@ -1,4 +1,4 @@
-module Error exposing (Context(..), Problem(..))
+module Error exposing (Context(..), Problem(..), EvalError(..))
 
 
 type Problem
@@ -11,3 +11,7 @@ type Problem
 
 type Context
     = IntegerContext
+
+type EvalError =
+    IllegalOperandTypes
+    | ParseErrors String

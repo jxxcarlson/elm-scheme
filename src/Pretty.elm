@@ -1,4 +1,4 @@
-module Pretty exposing (printErrors, printResult, printVal)
+module Pretty exposing (printErrors, printError , printResult, printVal)
 
 import Error exposing (Context(..), Problem(..))
 import Parser.Advanced
