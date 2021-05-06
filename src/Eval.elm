@@ -57,7 +57,6 @@ eval result =
               Right (List (mapOverList eval items))
 
 
--- conjugate : (Either a b -> Either a c)
 
 mapOverList : (Either a b -> Either a c) -> List b -> List c
 mapOverList f list =
@@ -79,13 +78,13 @@ apply : String -> List LispVal -> Either EvalError LispVal
 apply func args =
     case Dict.get func primitives of
         Just f ->
-            Right (f args)
+            f args
 
         Nothing ->
             Left ( NoSuchFunction func)
 
 
-primitives : Dict String (List LispVal -> LispVal)
+primitives : Dict String (List LispVal -> Either EvalError LispVal)
 primitives =
     Dict.fromList
         [ ( "+", numericBinop (+) )
@@ -99,31 +98,32 @@ primitives =
         ]
 
 
-numericBinop : (Int -> Int -> Int) -> List LispVal -> LispVal
+numericBinop : (Int -> Int -> Int) -> List LispVal -> Either EvalError LispVal
 numericBinop op params =
-    Integer <| op (getNum 0 params) (getNum 1 params)
+    case
+      (getNum 0 params, getNum 1 params) of
+          (Just a, Just b) -> Right (Integer (op a b))
+          _ -> Left (BadIntegerArgs params)
 
 
-getNum : Int -> List LispVal -> Int
+
+getNum : Int -> List LispVal -> Maybe Int
 getNum k list =
-    List.Extra.getAt k list |> Maybe.map unpackNum |> Maybe.withDefault 0
+    List.Extra.getAt k list |> Maybe.andThen unpackNum
 
 
-unpackNum : LispVal -> Int
+unpackNum : LispVal -> Maybe Int
 unpackNum val =
     case val of
         Integer n ->
-            n
+            Just n
 
         String n ->
-            String.toInt n |> Maybe.withDefault 0
+            String.toInt n
 
         List data ->
-            List.head data |> Maybe.map unpackNum |> Maybe.withDefault 0
+            List.head data |> Maybe.andThen unpackNum
 
         _ ->
-            0
+            Nothing
 
-
-
--- Number $ foldl1 op $ map unpackNum params
