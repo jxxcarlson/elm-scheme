@@ -5,6 +5,7 @@ type Problem
     = ExpectingSymbol
     | ExpectingChar Char
     | ExpectingInt
+    | ExpectingFloat
     | EndOfInput
     | UnHandledError Int
 

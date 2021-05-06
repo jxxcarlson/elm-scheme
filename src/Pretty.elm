@@ -1,9 +1,9 @@
-module Pretty exposing (printErrors, printError , printEvalError, printResult, printVal)
+module Pretty exposing (printError, printErrors, printEvalError, printResult, printVal)
 
 import Error exposing (Context(..), Problem(..))
+import EvalError exposing (EvalError(..))
 import Parser.Advanced
 import SchemeParser exposing (LispVal(..))
-import EvalError exposing(EvalError(..))
 
 
 type alias ParseError =
@@ -23,9 +23,14 @@ printResult result =
 printEvalError : EvalError -> String
 printEvalError error =
     case error of
-        ParseErrors errors -> printErrors errors
-        BadArgs args -> "Bad args: " ++ printValList args
-        NoSuchFunction functionName -> "No function named " ++ functionName
+        ParseErrors errors ->
+            printErrors errors
+
+        BadArgs args ->
+            "Bad args: " ++ printValList args
+
+        NoSuchFunction functionName ->
+            "No function named " ++ functionName
 
 
 printErrors : List ParseError -> String
@@ -42,9 +47,11 @@ printError err =
         _ ->
             "Parse error"
 
+
 printValList : List LispVal -> String
 printValList list =
     List.map printVal list |> String.join ", "
+
 
 printVal : LispVal -> String
 printVal val =
@@ -60,6 +67,9 @@ printVal val =
 
         Integer k ->
             String.fromInt k
+
+        Float x ->
+            String.fromFloat x
 
         String str ->
             str

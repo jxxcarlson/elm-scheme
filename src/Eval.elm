@@ -1,19 +1,21 @@
 module Eval exposing (..)
 
 import Dict exposing (Dict)
-import List.Extra
-import Error exposing(Context(..),  Problem(..))
+import Either exposing (Either(..))
+import Error exposing (Context(..), Problem(..))
 import EvalError exposing (EvalError(..))
-import SchemeParser exposing (LispVal(..))
-import Either exposing(Either(..))
+import List.Extra
 import Parser.Advanced
+import SchemeParser exposing (LispVal(..))
+
+
 
 -- type EvalResult = Either EvalError LispVal
 
 
-
 type alias ParseError =
     Parser.Advanced.DeadEnd Context Problem
+
 
 {-|
 
@@ -27,19 +29,25 @@ type alias ParseError =
 eval : Either EvalError LispVal -> Either EvalError LispVal
 eval result =
     case result of
-        Left err -> Left err
+        Left err ->
+            Left err
 
         Right (Atom s) ->
             Right (Atom s)
 
-        Right (DottedList stuff  v) ->
+        Right (DottedList stuff v) ->
             case eval (Right v) of
-                Left err -> Left err
+                Left err ->
+                    Left err
+
                 Right v_ ->
-                   Right (DottedList (mapOverList eval stuff) (v_))
+                    Right (DottedList (mapOverList eval stuff) v_)
 
         Right (Integer n) ->
             Right (Integer n)
+
+        Right (Float x) ->
+            Right (Float x)
 
         Right (String s) ->
             Right (String s)
@@ -48,14 +56,13 @@ eval result =
             Right (Bool s)
 
         Right (List [ Atom "quote", val_ ]) ->
-           Right (List [ Atom "quote", val_ ])
+            Right (List [ Atom "quote", val_ ])
 
         Right (List ((Atom func) :: args)) ->
             apply func (mapOverList eval args)
 
         Right (List items) ->
-              Right (List (mapOverList eval items))
-
+            Right (List (mapOverList eval items))
 
 
 mapOverList : (Either a b -> Either a c) -> List b -> List c
@@ -63,16 +70,20 @@ mapOverList f list =
     List.map f (List.map Right list) |> unwrapList
 
 
-unwrapList : List(Either a b)-> List b
+unwrapList : List (Either a b) -> List b
 unwrapList list =
     let
-        folder : (Either a b) -> List b -> List b
+        folder : Either a b -> List b -> List b
         folder e list_ =
             case e of
-                Left _ -> list_
-                Right b -> b :: list_
+                Left _ ->
+                    list_
+
+                Right b ->
+                    b :: list_
     in
     List.foldl folder [] list |> List.reverse
+
 
 apply : String -> List LispVal -> Either EvalError LispVal
 apply func args =
@@ -81,7 +92,7 @@ apply func args =
             f args
 
         Nothing ->
-            Left ( NoSuchFunction func)
+            Left (NoSuchFunction func)
 
 
 primitives : Dict String (List LispVal -> Either EvalError LispVal)
@@ -101,17 +112,24 @@ primitives =
 numericBinop : (Int -> Int -> Int) -> List LispVal -> Either EvalError LispVal
 numericBinop op params =
     case
-      (getNum 0 params, getNum 1 params) of
-          (Right (Integer a), Right (Integer b)) -> Right (Integer (op a b))
-          _ -> Left (BadArgs params)
+        ( getNum 0 params, getNum 1 params )
+    of
+        ( Right (Integer a), Right (Integer b) ) ->
+            Right (Integer (op a b))
 
+        _ ->
+            Left (BadArgs params)
 
 
 getNum : Int -> List LispVal -> Either EvalError LispVal
 getNum k list =
     case List.Extra.getAt k list of
-        Just val -> Right val
-        Nothing -> Left (BadArgs list)
+        Just val ->
+            Right val
+
+        Nothing ->
+            Left (BadArgs list)
+
 
 unpackNum : LispVal -> Maybe Int
 unpackNum val =
@@ -127,4 +145,3 @@ unpackNum val =
 
         _ ->
             Nothing
-

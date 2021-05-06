@@ -15,6 +15,7 @@ type LispVal
     | List (List LispVal)
     | DottedList (List LispVal) LispVal
     | Integer Int
+    | Float Float
     | String String
     | Bool Bool
 
@@ -27,7 +28,7 @@ type LispVal
 -}
 expr : Parser LispVal
 expr =
-    PA.oneOf [ PA.lazy (\_ -> parenthesizedList), string, atom, integer, PA.lazy (\_ -> quoted) ]
+    PA.oneOf [ PA.lazy (\_ -> parenthesizedList), string, atom, integer, float, PA.lazy (\_ -> quoted) ]
 
 
 parenthesizedList : Parser LispVal
@@ -152,3 +153,7 @@ makeAtom str =
 
 integer =
     PA.int ExpectingInt ExpectingInt |> PA.map Integer
+
+
+float =
+    PA.float ExpectingFloat ExpectingFloat |> PA.map Float
