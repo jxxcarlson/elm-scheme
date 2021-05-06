@@ -26,8 +26,11 @@ printEvalError error =
         ParseErrors errors ->
             printErrors errors
 
-        BadArgs args ->
-            "Bad args: " ++ printValList args
+        BadArgs message args ->
+            message ++ ": " ++ printValList args
+
+        MissingArg k ->
+            "Missing arg: " ++ String.fromInt k
 
         NoSuchFunction functionName ->
             "No function named " ++ functionName
@@ -68,7 +71,7 @@ printVal val =
         Integer k ->
             String.fromInt k
 
-        Float x ->
+        Real x ->
             String.fromFloat x
 
         String str ->

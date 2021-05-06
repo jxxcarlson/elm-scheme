@@ -9,10 +9,6 @@ import Parser.Advanced
 import SchemeParser exposing (LispVal(..))
 
 
-
--- type EvalResult = Either EvalError LispVal
-
-
 type alias ParseError =
     Parser.Advanced.DeadEnd Context Problem
 
@@ -46,8 +42,8 @@ eval result =
         Right (Integer n) ->
             Right (Integer n)
 
-        Right (Float x) ->
-            Right (Float x)
+        Right (Real x) ->
+            Right (Real x)
 
         Right (String s) ->
             Right (String s)
@@ -87,7 +83,23 @@ unwrapList list =
 
 apply : String -> List LispVal -> Either EvalError LispVal
 apply func args =
-    case Dict.get func primitives of
+    --let
+    --    _ =
+    --        Debug.log "ARG TYPES" (List.map typeOf args)
+    --in
+    case List.map typeOf args of
+        [ Int, Int ] ->
+            evalFunction intIntPrimitives func args
+
+        [ Float, Float ] ->
+            evalFunction floatFloatPrimitives func args
+
+        _ ->
+            Left (BadArgs "Inconsistent arg types" args)
+
+
+evalFunction primitives_ func args =
+    case Dict.get func primitives_ of
         Just f ->
             f args
 
@@ -95,13 +107,13 @@ apply func args =
             Left (NoSuchFunction func)
 
 
-primitives : Dict String (List LispVal -> Either EvalError LispVal)
-primitives =
+intIntPrimitives : Dict String (List LispVal -> Either EvalError LispVal)
+intIntPrimitives =
     Dict.fromList
-        [ ( "+", numericBinop (+) )
-        , ( "-", numericBinop (-) )
-        , ( "*", numericBinop (*) )
-        , ( "/", numericBinop (//) )
+        [ ( "+", intIntBinop (+) )
+        , ( "-", intIntBinop (-) )
+        , ( "*", intIntBinop (*) )
+        , ( "/", intIntBinop (//) )
 
         --("mod", numericBinop mod),
         --("quotient", numericBinop quot),
@@ -109,8 +121,41 @@ primitives =
         ]
 
 
-numericBinop : (Int -> Int -> Int) -> List LispVal -> Either EvalError LispVal
-numericBinop op params =
+floatFloatPrimitives : Dict String (List LispVal -> Either EvalError LispVal)
+floatFloatPrimitives =
+    Dict.fromList
+        [ ( "+", floatFloatBinop (+) )
+        , ( "-", floatFloatBinop (-) )
+        , ( "*", floatFloatBinop (*) )
+        , ( "/", floatFloatBinop (/) )
+        ]
+
+
+typeOf : LispVal -> EType
+typeOf lispVal =
+    case lispVal of
+        Integer _ ->
+            Int
+
+        Real _ ->
+            Float
+
+        Bool _ ->
+            Boolean
+
+        _ ->
+            Undefined
+
+
+type EType
+    = Int
+    | Float
+    | Boolean
+    | Undefined
+
+
+intIntBinop : (Int -> Int -> Int) -> List LispVal -> Either EvalError LispVal
+intIntBinop op params =
     case
         ( getNum 0 params, getNum 1 params )
     of
@@ -118,7 +163,19 @@ numericBinop op params =
             Right (Integer (op a b))
 
         _ ->
-            Left (BadArgs params)
+            Left (BadArgs "Args should be int, int" params)
+
+
+floatFloatBinop : (Float -> Float -> Float) -> List LispVal -> Either EvalError LispVal
+floatFloatBinop op params =
+    case
+        ( getNum 0 params, getNum 1 params )
+    of
+        ( Right (Real a), Right (Real b) ) ->
+            Right (Real (op a b))
+
+        _ ->
+            Left (BadArgs "Args should be float, float" params)
 
 
 getNum : Int -> List LispVal -> Either EvalError LispVal
@@ -128,20 +185,22 @@ getNum k list =
             Right val
 
         Nothing ->
-            Left (BadArgs list)
+            Left (MissingArg k)
 
 
-unpackNum : LispVal -> Maybe Int
-unpackNum val =
-    case val of
-        Integer n ->
-            Just n
 
-        String n ->
-            String.toInt n
-
-        List data ->
-            List.head data |> Maybe.andThen unpackNum
-
-        _ ->
-            Nothing
+--
+--unpackNum : LispVal -> Maybe Int
+--unpackNum val =
+--    case val of
+--        Integer n ->
+--            Just n
+--
+--        String n ->
+--            String.toInt n
+--
+--        List data ->
+--            List.head data |> Maybe.andThen unpackNum
+--
+--        _ ->
+--            Nothing

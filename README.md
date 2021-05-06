@@ -88,7 +88,29 @@ runs eval on it, then displays the output.
 
 2. Add a repl, as describe in the intro.
 
+### 4/6/2021
 
+1. Introduce module `Top` and wire it to the 
+[black box code](https://jxxcarlson.medium.com/running-elm-as-a-blackbox-b1930592054b) 
+so as to have a repl for interpreting Scheme.
+
+2. Change the type signature of `eval` from 
+
+   ```elm
+   eval : LispVal -> LispVal
+   ```
+   
+   to
+   
+   ```elm
+   eval : Either EvalError LispVal -> Either EvalError LispVal
+   ```
+3. Use the preceding to give better error messages.
+
+4. Add `Real Float` as a variant of type `LispVal` and add a 
+primitive form of type-checking for the new dispatch 
+   facility in function `apply`.
+   
 ## Comparison with Haskell Version 
 
 Let's compare the Haskell and Elm versions of the Parser + Eval modules at the 

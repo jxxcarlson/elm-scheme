@@ -1,17 +1,20 @@
 module EvalError exposing (EvalError(..))
 
+import Error exposing (Context, Problem)
 import Parser.Advanced
-import Error exposing(Context, Problem)
-import SchemeParser exposing(LispVal)
+import SchemeParser exposing (LispVal)
+
 
 type alias ParseErrors =
     List (Parser.Advanced.DeadEnd Context Problem)
+
 
 type alias ParseError =
     Parser.Advanced.DeadEnd Context Problem
 
 
-type EvalError =
-    ParseErrors (List ParseError)
-    | BadArgs (List LispVal)
+type EvalError
+    = ParseErrors (List ParseError)
+    | BadArgs String (List LispVal)
+    | MissingArg Int
     | NoSuchFunction String
