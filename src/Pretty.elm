@@ -24,7 +24,7 @@ printEvalError : EvalError -> String
 printEvalError error =
     case error of
         ParseErrors errors -> printErrors errors
-        BadIntegerArgs args -> "Bad integer args: " ++ printValList args
+        BadArgs args -> "Bad args: " ++ printValList args
         NoSuchFunction functionName -> "No function named " ++ functionName
 
 

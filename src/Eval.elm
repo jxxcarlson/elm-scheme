@@ -102,15 +102,16 @@ numericBinop : (Int -> Int -> Int) -> List LispVal -> Either EvalError LispVal
 numericBinop op params =
     case
       (getNum 0 params, getNum 1 params) of
-          (Just a, Just b) -> Right (Integer (op a b))
-          _ -> Left (BadIntegerArgs params)
+          (Right (Integer a), Right (Integer b)) -> Right (Integer (op a b))
+          _ -> Left (BadArgs params)
 
 
 
-getNum : Int -> List LispVal -> Maybe Int
+getNum : Int -> List LispVal -> Either EvalError LispVal
 getNum k list =
-    List.Extra.getAt k list |> Maybe.andThen unpackNum
-
+    case List.Extra.getAt k list of
+        Just val -> Right val
+        Nothing -> Left (BadArgs list)
 
 unpackNum : LispVal -> Maybe Int
 unpackNum val =

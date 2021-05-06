@@ -13,5 +13,5 @@ type alias ParseError =
 
 type EvalError =
     ParseErrors (List ParseError)
-    | BadIntegerArgs (List LispVal)
+    | BadArgs (List LispVal)
     | NoSuchFunction String
