@@ -1,8 +1,9 @@
-module Pretty exposing (printErrors, printError , printResult, printVal)
+module Pretty exposing (printErrors, printError , printEvalError, printResult, printVal)
 
 import Error exposing (Context(..), Problem(..))
 import Parser.Advanced
 import SchemeParser exposing (LispVal(..))
+import EvalError exposing(EvalError(..))
 
 
 type alias ParseError =
@@ -17,6 +18,10 @@ printResult result =
 
         Ok val ->
             printVal val
+
+
+printEvalError : EvalError -> String
+printEvalError error = "Eval error"
 
 
 printErrors : List ParseError -> String

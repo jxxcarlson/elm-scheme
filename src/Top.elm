@@ -4,15 +4,20 @@ import Error exposing (Context(..), Problem(..))
 import Eval as E
 import Parser.Advanced exposing (run)
 import Pretty
-import SchemeParser as P
+import SchemeParser as P exposing(LispVal)
 import Either exposing(Either(..))
+import EvalError exposing(EvalError(..))
 
 type alias ParseErrors =
     List (Parser.Advanced.DeadEnd Context Problem)
 
 
-es input = evalString input
 
+es : String -> String
+es input =
+    case evalString input of
+        Left evalError ->  Pretty.printEvalError evalError
+        Right lispVal -> Pretty.printVal lispVal
 
 ps input =
     case run P.expr input of
@@ -24,11 +29,9 @@ ps input =
 
 
 
--- Pretty.printVal
-
-evalString :  String -> Either String String
+evalString :  String -> Either EvalError LispVal
 evalString input =
     case run P.expr input of
-        Err errors -> Left (Pretty.printErrors errors)
-        Ok listVal -> Either.mapBoth (\errors -> "Eval error") Pretty.printVal (E.eval (Right listVal))
+        Err errors -> Left ( ParseErrors errors)
+        Ok listVal -> (E.eval (Right listVal))
 

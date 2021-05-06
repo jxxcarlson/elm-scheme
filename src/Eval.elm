@@ -2,11 +2,18 @@ module Eval exposing (..)
 
 import Dict exposing (Dict)
 import List.Extra
-import Error exposing(EvalError(..))
+import Error exposing(Context(..),  Problem(..))
+import EvalError exposing (EvalError(..))
 import SchemeParser exposing (LispVal(..))
 import Either exposing(Either(..))
+import Parser.Advanced
 
 -- type EvalResult = Either EvalError LispVal
+
+
+
+type alias ParseError =
+    Parser.Advanced.DeadEnd Context Problem
 
 {-|
 
