@@ -11,5 +11,5 @@ type alias ParseError =
 
 
 type EvalError =
-    IllegalOperandTypes
-    | ParseErrors (List ParseError)
+    ParseErrors (List ParseError)
+    | NoSuchFunction String

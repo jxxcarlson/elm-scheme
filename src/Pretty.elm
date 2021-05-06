@@ -21,7 +21,10 @@ printResult result =
 
 
 printEvalError : EvalError -> String
-printEvalError error = "Eval error"
+printEvalError error =
+    case error of
+        ParseErrors errors -> printErrors errors
+        NoSuchFunction functionName -> "No function named " ++ functionName
 
 
 printErrors : List ParseError -> String

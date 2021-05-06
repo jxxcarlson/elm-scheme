@@ -51,7 +51,7 @@ eval result =
            Right (List [ Atom "quote", val_ ])
 
         Right (List ((Atom func) :: args)) ->
-            Right (apply func (mapOverList eval args))
+            apply func (mapOverList eval args)
 
         Right (List items) ->
               Right (List (mapOverList eval items))
@@ -75,14 +75,14 @@ unwrapList list =
     in
     List.foldl folder [] list |> List.reverse
 
-apply : String -> List LispVal -> LispVal
+apply : String -> List LispVal -> Either EvalError LispVal
 apply func args =
     case Dict.get func primitives of
         Just f ->
-            f args
+            Right (f args)
 
         Nothing ->
-            Atom ("No function named " ++ func)
+            Left ( NoSuchFunction func)
 
 
 primitives : Dict String (List LispVal -> LispVal)
